@@ -57,12 +57,13 @@ func (h *Handler) CreateShortUrl(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
+// Переход на сайт с новой(короткой) ссылкой
 func (h *Handler) Redirect(w http.ResponseWriter, r *http.Request) {
-	id := r.PathValue("id")
-	url, ok := h.Storage.Get(id)
+	id := r.PathValue("id") // Извлекаем ссылку
+	url, ok := h.Storage.Get(id) // Ищем ссылку в хранилище
 	if !ok {
 		http.Error(w, "Не найдено", http.StatusBadRequest)
 		return
 	}
-	http.Redirect(w, r, url, http.StatusFound)
+	http.Redirect(w, r, url, http.StatusFound) // Перенаправляем пользователя по ссылке
 }
