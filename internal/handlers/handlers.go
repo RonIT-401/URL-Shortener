@@ -1,27 +1,43 @@
 package handlers
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"shortener/internal/storage"
 	"shortener/internal/utils"
 )
 
+type RequestJSON struct {
+	URL string `json:"url"`
+}
+
+type ResponseJSON struct {
+	Result string `json:"result"`
+}
+
 type Handler struct {
 	Storage *storage.MemStorage
 }
 
 func (h *Handler) CreateShortUrl(w http.ResponseWriter, r *http.Request) {
-	url := r.URL.Query().Get("url")
-	if url == "" {
-		http.Error(w, "Нужен url", http.StatusBadRequest)
-		return
+	var request RequestJSON
+
+	err := json.NewDecoder(r.Body).Decode(&request)
+	if err != nil {
+		http.Error(w, "Некоректный URL", http.StatusBadRequest)
 	}
 
 	id := utils.GenerateID(6)
-	
-	h.Storage.Save(id, url)
-	fmt.Fprintf(w, "Ваш ID: %s", id)
+
+	response := ResponseJSON{
+		Result: fmt.Sprintf("http://lacalhost:8080/%s", id),
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+
+	json.NewEncoder(w).Encode(response)
 }
 
 func (h *Handler) Redirect(w http.ResponseWriter, r *http.Request) {
