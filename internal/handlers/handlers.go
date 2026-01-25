@@ -26,6 +26,7 @@ func (h *Handler) CreateShortUrl(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
 		http.Error(w, "Некоректный URL", http.StatusBadRequest)
+		return
 	}
 
 	id := utils.GenerateID(6)
