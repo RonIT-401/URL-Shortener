@@ -20,7 +20,7 @@ type ResponseJSON struct {
 
 // Структура обработчик
 type Handler struct {
-	Storage *storage.MemStorage
+	Storage storage.Storage
 }
 
 // Функция преобразования короткой ссылки
@@ -40,7 +40,11 @@ func (h *Handler) CreateShortUrl(w http.ResponseWriter, r *http.Request) {
 
 	id := utils.GenerateID(6) // Генерируем уникальный ID
 
-	h.Storage.Save(id, request.URL) // Сохраняем короткий ID и длинный ID
+	err = h.Storage.Save(id, request.URL) // Сохраняем короткий ID и длинный ID
+	if err != nil {
+		http.Error(w, "Ошибка сохранения в базу", http.StatusBadRequest)
+		return
+	}
 
 	// Записываем ответ в переменную
 	response := ResponseJSON{
@@ -59,8 +63,14 @@ func (h *Handler) CreateShortUrl(w http.ResponseWriter, r *http.Request) {
 
 // Переход на сайт с новой(короткой) ссылкой
 func (h *Handler) Redirect(w http.ResponseWriter, r *http.Request) {
-	id := r.PathValue("id") // Извлекаем ссылку
-	url, ok := h.Storage.Get(id) // Ищем ссылку в хранилище
+	id := r.PathValue("id")      // Извлекаем ссылку
+	url, ok, err:= h.Storage.Get(id) // Ищем ссылку в хранилище
+
+	if err != nil {
+		http.Error(w, "Ошибка сервера при поиске", http.StatusBadRequest)
+		return
+	}
+
 	if !ok {
 		http.Error(w, "Не найдено", http.StatusBadRequest)
 		return
