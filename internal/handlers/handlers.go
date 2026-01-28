@@ -44,7 +44,7 @@ func (h *Handler) CreateShortUrl(w http.ResponseWriter, r *http.Request) {
 
 	// Записываем ответ в переменную
 	response := ResponseJSON{
-		Result: fmt.Sprintf("http://lacalhost:8080/%s", id),
+		Result: fmt.Sprintf("http://localhost:8080/%s", id),
 	}
 
 	// Передаем тип контента что бы Postman корректно обработал данные
