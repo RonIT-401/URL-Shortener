@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"shortener/internal/storage"
 	"shortener/internal/utils"
@@ -40,6 +41,16 @@ func (h *Handler) CreateShortUrl(w http.ResponseWriter, r *http.Request) {
 
 	id := utils.GenerateID(6) // Генерируем уникальный ID
 
+	exists, err := h.Storage.CheckExistURL(request.URL)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if exists {
+		http.Error(w, "Ссылка уже была сокращена", http.StatusAlreadyReported)
+		return
+	}
+
 	err = h.Storage.Save(id, request.URL) // Сохраняем короткий ID и длинный ID
 	if err != nil {
 		http.Error(w, "Ошибка сохранения в базу", http.StatusBadRequest)
@@ -63,8 +74,8 @@ func (h *Handler) CreateShortUrl(w http.ResponseWriter, r *http.Request) {
 
 // Переход на сайт с новой(короткой) ссылкой
 func (h *Handler) Redirect(w http.ResponseWriter, r *http.Request) {
-	id := r.PathValue("id")      // Извлекаем ссылку
-	url, ok, err:= h.Storage.Get(id) // Ищем ссылку в хранилище
+	id := r.PathValue("id")           // Извлекаем ссылку
+	url, ok, err := h.Storage.Get(id) // Ищем ссылку в хранилище
 
 	if err != nil {
 		http.Error(w, "Ошибка сервера при поиске", http.StatusBadRequest)

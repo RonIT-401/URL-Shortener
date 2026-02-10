@@ -50,3 +50,16 @@ func (s *PostgresStorage) Get(id string) (string, bool, error) {
 	}
 	return fullURL, true, nil
 }
+
+func (s *PostgresStorage) CheckExistURL(url string) (bool, error) {
+	var exists bool
+
+	err := s.db.QueryRow(context.Background(), `SELECT EXISTS(
+		SELECT 1 FROM urls WHERE full_url = $1)`, url).Scan(&exists)
+
+	if err != nil {
+		return false, err
+	}
+
+	return exists, nil
+}
