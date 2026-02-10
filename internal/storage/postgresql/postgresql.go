@@ -15,23 +15,38 @@ func New(dsn string) (*PostgresStorage, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	newTable := `
+		CREATE TABLE IF NOT EXISTS urls (
+		id SERIAL PRIMARY KEY,
+		short_url VARCHAR NOT NULL,
+		full_url VARCHAR NOT NULL,
+
+		UNIQUE(full_url)
+		)
+	`
+
+	if _, err := db.Exec(context.Background(), newTable); err != nil {
+		return nil, err
+	}
+
 	return &PostgresStorage{db: db}, nil
 }
 
 func (s *PostgresStorage) Save(id, url string) error {
+
 	_, err := s.db.Exec(context.Background(),
-		"INSERT INTO url(short_url, full_url) VALUES($1, $2)", id, url)
-	return  err
+		"INSERT INTO urls(short_url, full_url) VALUES($1, $2)", id, url)
+	return err
 }
 
 func (s *PostgresStorage) Get(id string) (string, bool, error) {
 	var fullURL string
 	err := s.db.QueryRow(context.Background(),
-		"SELECT full_url FROM url WHERE short_url = $1", id).Scan(&fullURL)
+		"SELECT full_url FROM urls WHERE short_url = $1", id).Scan(&fullURL)
 
 	if err != nil {
 		return "", false, err
 	}
 	return fullURL, true, nil
 }
-

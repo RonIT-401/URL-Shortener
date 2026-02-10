@@ -12,11 +12,11 @@ func main() {
 	// store := memstorage.New()
 
 	// Postgres
-	dsn :="postgres://myuser:mypassword@localhost:5432/postgres?sslmode=disable"
+	dsn := "postgres://postgres:1111@localhost:5432/postgres"
 	store, err := postgresql.New(dsn)
-	if err != nil {
-		panic(err)
-	}
+		if err != nil {
+			panic(err)
+		}
 
 	h := &handlers.Handler{Storage: store}
 
