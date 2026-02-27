@@ -48,6 +48,33 @@ func (h *Handler) CreateShortUrl(w http.ResponseWriter, r *http.Request) {
 
 	if exists {
 		http.Error(w, "Ссылка уже была сокращена", http.StatusAlreadyReported)
+
+		url, ok, err := h.Storage.GetShort(request.URL)
+
+		if err != nil {
+			http.Error(w, "Ошибка сервера при поиске", http.StatusBadRequest)
+			return
+		}
+
+		if !ok {
+			http.Error(w, "Не найдено", http.StatusBadRequest)
+			return
+		}
+
+		// Записываем ответ в переменную
+		response := ResponseJSON{
+			Result: fmt.Sprintf("http://localhost:8080/%s", url),
+		}
+
+		// Передаем тип контента что бы Postman корректно обработал данные
+		w.Header().Set("Content-Type", "application/json")
+
+		// Устанавливаем HTTP статус 201 (Created)
+		w.WriteHeader(http.StatusCreated)
+
+		// Подключаемся на выход к пользователю и отправляем текст JSON в сеть
+		json.NewEncoder(w).Encode(response)
+
 		return
 	}
 

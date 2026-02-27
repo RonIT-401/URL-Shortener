@@ -51,6 +51,17 @@ func (s *PostgresStorage) Get(id string) (string, bool, error) {
 	return fullURL, true, nil
 }
 
+func (s *PostgresStorage) GetShort(id string) (string, bool, error) {
+	var shortURL string
+	err := s.db.QueryRow(context.Background(),
+		"SELECT short_url FROM urls WHERE full_url = $1", id).Scan(&shortURL)
+
+	if err != nil {
+		return "", false, err
+	}
+	return shortURL, true, nil
+}
+
 func (s *PostgresStorage) CheckExistURL(url string) (bool, error) {
 	var exists bool
 
